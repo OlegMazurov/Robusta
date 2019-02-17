@@ -46,14 +46,14 @@
                     <id>default-cli</id>
                     <configuration>
                         <mainClass>org.mazurov.robusta.Main</mainClass>
-                        <commandlineArgs>-w 400 -h 400 -t 8000 -p 8</commandlineArgs>
+                        <commandlineArgs>-w 400 -h 400 -t 8000 -p 8 -o acorn.out</commandlineArgs>
                     </configuration>
                     </execution>
                     <execution>
                         <id>counter</id>
                         <configuration>
                             <mainClass>org.mazurov.robusta.Main</mainClass>
-                            <commandlineArgs>-h 1400 -w 860 -t 5000 -p 8 DecimalCounter.rle</commandlineArgs>
+                            <commandlineArgs>-h 1400 -w 860 -t 5000 -p 8 -o counter.out DecimalCounter.rle</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>

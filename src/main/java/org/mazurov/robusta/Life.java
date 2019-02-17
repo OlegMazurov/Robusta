@@ -112,7 +112,7 @@ public class Life {
                 for (int n = 0; n < cells.length(); ++n) {
                     if (++cur == cells.length()) cur = 0;
                     val = cells.get(cur);
-                    if (val >> 2 != maxTime) continue mainLoop;
+                    if (val >>> 2 != maxTime) continue mainLoop;
                 }
                 done = true;
                 return;
@@ -127,11 +127,7 @@ public class Life {
                 if (tsn == ts) sum += valn & 0x1;
                 else if (tsn == ts + 1) sum += (valn >>> 1) & 0x1;
                 else {
-                    if (tsn < ts) cur = idxn;
-                    else {
-                        cur += leap;
-                        if (cur >= cells.length()) cur -= cells.length();
-                    }
+                    cur = tsn - ts < 0 ? idxn : leap * id;
                     continue mainLoop;
                 }
             }
@@ -141,8 +137,7 @@ public class Life {
             int nextVal = ((ts + 1) << 2) | ((val & 0x1) << 1) | nextState;
             if (!cells.compareAndSet(cur, val, nextVal)) {
                 // We are out of sync, start over
-                cur += leap;
-                if (cur >= cells.length()) cur -= cells.length();
+                cur = leap * id;
                 continue mainLoop;
             }
 
@@ -162,12 +157,17 @@ public class Life {
 
     public void execute() {
         done = false;
+
+        // Create workers
         threads = new AtomicReferenceArray<Thread>(nThreads);
         for (int i = 0; i < threads.length(); ++i) {
             final int id = i;
             Thread thread = new Thread(() -> run(id));
             threads.set(i, thread);
-            thread.start();
+        }
+        // Start in a separate loop to avoid triggering the recovery mechanism
+        for (int i = 0; i < threads.length(); ++i) {
+            threads.get(i).start();
         }
 
         // Release the chaos monkey
@@ -183,8 +183,8 @@ public class Life {
             int tidx = rnd.nextInt(threads.length());
             Thread victim = threads.get(tidx);
             if (victim != null) {
-                threads.set(tidx, null);
                 victim.stop();
+                threads.set(tidx, null);
                 ++killed;
             }
         }
